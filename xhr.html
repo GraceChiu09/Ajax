@@ -7,11 +7,25 @@
     <title>XMLHttpRequest</title>
     <link rel="shortcut icon" href="#" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
+    <style>
+        ul li{
+            padding: 0.5rem 1rem;
+            border: 1px solid green;
+
+        }
+        h2{
+            color: bisque;
+            background-color: black;
+            width: 100px;
+            height: 30px;
+        }
+    </style>
 </head>
 <body>
     <h1 class="header">XMLHttpRequest</h1>
     <div class="title"></div>
-    <h4></h4>
+    <h2 class="h2">今天心情不好</h2>
+    <h4>周末要做啥?</h4>
     <ul></ul>
 
 </body>
@@ -26,14 +40,44 @@
     ********************************************************/
 
     //宣告一個XMLHttpRequest物件
+    let xhr = new XMLHttpRequest;
+
 
 
     //建立請求的各項設定及實質內容
+    // 預設非同步
+    xhr.open(
+        'get', 
+        'https://kktix.com/events.json',
 
+    );
 
     //建立得到回應時的各項設定及行為
+    xhr.onload=function(){
+        let type=xhr.getResponseHeader("Content-Type");
+        let status=xhr.status;
+        let res=xhr.responseText;
+        let data=JSON.parse(res);
+        // console.log(type, status, res);
+        let title=document.querySelector(".title");
+        title.innerHTML=data.title
 
+        // console.log(data);
+        let ul=document.querySelector('ul');
+        let li='';
+        let entrys=data.entry
+        for (let i = 0; i < entrys.length; i++) {
+            li=li+`<li>${entrys[i].title}</li>`;
+            
+        }
+        ul.innerHTML=li;
+    }
 
     //送出請求
+    xhr.send();
+    // for (let i = 0; i < data.entry.length; i++) {
+    //     console.log(data.entry[i]);
+        
+    // }
 
     </script>

@@ -15,19 +15,35 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js" integrity="sha384-VHvPCCyXqtD5DqJeNxl2dtTyhF78xXNXdkwX1CZeRusQfRKp+tA7hAShOK/B/fQ2" crossorigin="anonymous"></script>
 <body>
-   <h1 class="text-center">學生資料管理系統</h1>
-  <div class="addform">
-    <form method="post">
+  
+  <div class="alert alert-primary text-center" role="alert">
+    學生資料管理系統</div>
+   <!-- <h1 class="text-center">學生資料管理系統</h1> -->
+   <!-- <div class="btn btn-primary" onclick="loadForm">請編輯資料</div>
+   <br><br>
+   <div class="studentForm">
+  </div> -->
+  <div class="editform">
+  <h3 class="btn btn-secondary" >編輯學員</h3>
+    <div class="card bg-light mb-3" style="max-width: 18rem;">
+  <form method="post">
       <br>
-      <p>班級:<input type="number" name="classroom" id="classroom"></p>
-      <p>座號:<input type="number" name="seatnum" id="seatnum"></p>
-      <p>姓名:<input type="text" name="name" id="name"></p>
-      <p>生日:<input type="date" name="birthday" id="birthday"></p>
-      <p><input type="button" value="確認新增" onclick="create()"></p>
+      <p>班級:<input type="number" name="classroom" id="eClassroom" value=""></p>
+      <p>座號:<input type="number" name="seatnum" id="eSeatnum" value=""></p>
+      <p>姓名:<input type="text" name="name" id="eName" value=""></p>
+      <p>生日:<input type="date" name="birthday" id="eBirthday" value=""></p>
+      <p>
+        <input class="btn btn-primary" type="button" value="確認新增" onclick="update()">
+        <input class="btn btn-primary" type="button" value="刪除" onclick="update()">
+        <!-- <input type="button" value="確認新增" onclick="update()">
+        <input type="button" value="刪除" onclick="update()"> -->
+      </p>
     </form>
   </div>
-  <div class="editform"></div>
-  <a href="javascript:query(101)">101</a>
+  </div>
+  <nav class="navbar navbar-dark bg-light">
+    <a href="javascript:query(101)">101</a>
+    <a href="javascript:query(101)">101</a>
   <a href="javascript:query(102)">102</a>
   <a href="javascript:query(103)">103</a>
   <a href="javascript:query(104)">104</a>
@@ -37,14 +53,15 @@
   <a href="javascript:query(108)">108</a>
   <a href="javascript:query(109)">109</a>
   <a href="javascript:query(110)">110</a>
-  <h3 id="room"></h3>
+  </nav>
+  
+  <h3 id="room" data-classroom="101"></h3>
   <div id="result" style="display:none;"></div>
 
-
+<div class="text-center">
   <table id="list">
-
   </table>
-    
+</div>
 </body>
 </html>
 <script>
@@ -56,6 +73,13 @@
 * 5.是否需要更新畫面內容？更新畫面的方法？
 ************************************/
 query(101);
+// 載入form
+function loadForm(type) {
+  $("#studentForm").load("./form/student_form.php",{type})
+
+  
+  
+}
 
 //新增資料的函式
 function create(){
@@ -69,6 +93,7 @@ function create(){
 
    $.post("./api/insert.php",form,(res)=>{
     if(parseInt(res)===1){
+      // $('.alert').alert()
       alert("新增成功")
       query(form.classroom)
     }else{
@@ -81,6 +106,8 @@ function create(){
 //查詢資料的函式
 function query(classroom){
   $("#room").html(`現在顯示的是${classroom}班的學生`)
+  $("#room").data('classroom',classroom)
+  console.log($("#room").data('classroom'))
   $.get("api/query.php",{classroom},(students)=>{
     students=JSON.parse(students)
     let tr="";
@@ -89,6 +116,7 @@ function query(classroom){
                 <td>${val.name}</td>
                 <td>${val.birthday}</td>
                 <td>
+                    <button onclick='del(${classroom},${val.id})'>編輯(${val.id}))</button>
                     <button onclick='del(${classroom},${val.id})'>刪除(${val.id}))</button>
                 </td>
              </tr>`;
@@ -98,23 +126,53 @@ function query(classroom){
   })
 }
 
+// 取得要修改的學生資料
+function edit(id){
+  $.get("./api/show.php",{id},(student)=>{
+      student=JSON.parse(student)
+      $("#eClassroom").val(student.classroom)
+      $("#eSeatnum").val(student.seat_num)
+      $("#eName").val(student.name)
+      $("#eBirthday").val(student.birthday)
+  })
+}
+
 //編輯資料的函式
 function update(){
-
+  let form={
+    "classroom":$("#eClassroom").val(),
+    "seatnum":$("#eSeatnum").val(),
+    "name":$("#eName").val(),
+    "birthday":$("#eBirthday").val(),
+    "id":$("#stuId").val()
+  }
+  //console.log(form)
+  $.post("./api/update.php",form,()=>{
+    $("#eClassroom").val(""),
+    $("#eSeatnum").val(""),
+    $("#eName").val(""),
+    $("#eBirthday").val(""),
+    $("#stuId").val("")
+    query(form.classroom)
+  })
 }
 
 //刪除資料的函式
-function del(classroom,id){
+function del(id){
+  let classroom=$("#room").data('classroom')
+  $.post("./api/delete.php",{id},(res)=>{
+      if(parseInt(res)===1){
+        $("#result").css({background:'lightblue',color:'blue',display:'block'}).text("刪除成功");
+      }else{
+        $("#result").css({background:'pinky',color:'red',display:'block'}).text("刪除失敗");
+      }
 
-$.post("./api/delete.php",{id},(res)=>{
-    if(parseInt(res)===1){
-      $("#result").css({background:'lightblue',color:'blue',display:'block'}).text("刪除成功");
-    }else{
-      $("#result").css({background:'pinky',color:'red',display:'block'}).text("刪除失敗");
-    }
+      query(classroom);
 
-    query(classroom);
-})
+      setTimeout(()=>{
+        $("#result").hide(500);
+      },3000)
+  })
 
 }
 

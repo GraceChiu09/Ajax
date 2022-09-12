@@ -41,7 +41,7 @@
             float:right;
 
         }
-    </style>
+    </style> 
 </head>
 <body>
     <h1 class="header">axios</h1>
@@ -66,9 +66,9 @@
 //發起一個axios請求
 //建立回呼函式(call back function)來處理回應時的各項行為
 //建立錯誤處理
-axios.get('https://kktix.com/events.json')
+axios.get('https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=4')
 .then((res)=>{
-    eventList(res.data)
+    console.log(res.data);
 })
 
 </script>
